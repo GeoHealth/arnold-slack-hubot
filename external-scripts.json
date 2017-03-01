@@ -10,5 +10,6 @@
   "hubot-sentiment",
   "hubot-shipit",
   "hubot-reload-scripts",
-  "hubot-self-uptime"
+  "hubot-self-uptime",
+  "hubot-wolfram-alpha"
 ]

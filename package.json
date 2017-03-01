@@ -19,7 +19,8 @@
     "hubot-self-uptime": "0.0.3",
     "hubot-sentiment": "^1.2.7",
     "hubot-shipit": "^0.2.0",
-    "hubot-slack": "^4.2.2"
+    "hubot-slack": "^4.2.2",
+    "hubot-wolfram-alpha": "0.0.5"
   },
   "engines": {
     "node": "0.10.x"
