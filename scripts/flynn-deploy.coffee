@@ -7,33 +7,17 @@ deploy_to_flynn = (robot, res, repo_url, repo_name, commit_sha, flynn_user, flyn
   cd_to_repo_folder = "cd #{repo_name}"
   git_checkout = "git checkout -qf #{commit_sha}"
   git_push = "git push --force https://#{flynn_user}:#{flynn_key}@#{flynn_remote_url}/#{flynn_app_name}.git #{commit_sha}:master"
+  complete_command = git_clone + ';' + cd_to_repo_folder + ';' + git_checkout + ';' + git_push
+
   @exec = require('child_process').exec
 
-  res.send git_clone
-  @exec git_clone, (error, stdout, stderr) ->
+  res.send complete_command
+  @exec complete_command, (error, stdout, stderr) ->
     if error
         res.send error
         res.send stderr
     else
-        res.send cd_to_repo_folder
-        @exec cd_to_repo_folder, (error, stdout, stderr) ->
-          if error
-              res.send error
-              res.send stderr
-          else
-              res.send git_checkout
-              @exec git_checkout, (error, stdout, stderr) ->
-                if error
-                    res.send error
-                    res.send stderr
-                else
-                    res.send git_push
-                    @exec git_push, (error, stdout, stderr) ->
-                      if error
-                          res.send error
-                          res.send stderr
-                      else
-                          res.send stdout
+        res.send stdout
 
 module.exports = (robot) ->
 
