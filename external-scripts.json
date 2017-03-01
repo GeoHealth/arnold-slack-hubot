@@ -9,5 +9,6 @@
   "hubot-rules",
   "hubot-sentiment",
   "hubot-shipit",
-  "hubot-reload-scripts"
+  "hubot-reload-scripts",
+  "hubot-self-uptime"
 ]

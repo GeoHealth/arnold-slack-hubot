@@ -16,6 +16,7 @@
     "hubot-reload-scripts": "^0.1.4",
     "hubot-rules": "^0.1.1",
     "hubot-scripts": "^2.17.2",
+    "hubot-self-uptime": "0.0.3",
     "hubot-sentiment": "^1.2.7",
     "hubot-shipit": "^0.2.0",
     "hubot-slack": "^4.2.2"
