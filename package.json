@@ -20,7 +20,7 @@
     "hubot-sentiment": "^1.2.7",
     "hubot-shipit": "^0.2.0",
     "hubot-slack": "^4.2.2",
-    "hubot-wolfram": "^1.1.0"
+    "node-wolfram-api": "^1.0.0"
   },
   "engines": {
     "node": "0.10.x"
