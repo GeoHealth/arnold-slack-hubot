@@ -1,4 +1,9 @@
-# Listen to messages from Travis-CI bot and tag Tanguy and Alexandre if a build fail
+# Listen to messages from Travis-CI bot
+#
+# Slack reactions:
+#   If build passed, thumbsup
+#   If build failed, thumbsdown
+#   If build errored, scream
 
 module.exports = (robot) ->
 
@@ -12,4 +17,3 @@ module.exports = (robot) ->
 
   robot.hear /Build .* passed/i, (res) ->
     robot.adapter.client.web.reactions.add("thumbsup", {channel: res.message.room, timestamp: res.message.id})
-
