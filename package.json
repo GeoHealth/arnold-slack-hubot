@@ -24,6 +24,5 @@
   },
   "engines": {
     "node": "0.10.x"
-  },
-  "scripts": { "postinstall": "bash -c 'curl https://raw.githubusercontent.com/GeoHealth/HAppi_backend/master/flynn-ca.cer >> flynn-ca.cer; cp flynn-ca.cer /usr/local/share/ca-certificates/flynn-ca.crt; update-ca-certificates; rm flynn-ca.cer'" }
+  }
 }

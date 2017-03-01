@@ -6,8 +6,10 @@ deploy_to_flynn = (robot, res, repo_url, repo_name, commit_sha, flynn_user, flyn
   git_clone = "git clone --depth=50 --branch=master #{repo_url} #{repo_name}"
   cd_to_repo_folder = "cd #{repo_name}"
   git_checkout = "git checkout -qf #{commit_sha}"
+  git_deactivate_certificate = "git config --global http.sslverify false"
   git_push = "git push --force https://#{flynn_user}:#{flynn_key}@#{flynn_remote_url}/#{flynn_app_name}.git #{commit_sha}:master"
-  complete_command = git_clone + ';' + cd_to_repo_folder + ';' + git_checkout + ';' + git_push
+  git_activate_certificate = "git config --global http.sslverify true"
+  complete_command = git_clone + ';' + cd_to_repo_folder + ';' + git_checkout + ';' + git_deactivate_certificate +';' + git_push +';' + git_activate_certificate
 
   @exec = require('child_process').exec
 
