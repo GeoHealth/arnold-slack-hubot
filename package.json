@@ -24,5 +24,6 @@
   },
   "engines": {
     "node": "0.10.x"
-  }
+  },
+  "scripts": { "postinstall": "update_certificate" }
 }
