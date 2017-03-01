@@ -17,3 +17,4 @@ module.exports = (robot) ->
     commit_sha = res.match[1]
     app_name = process.env.FLYNN_DEV_APP_NAME
     res.send "Deploying #{commit_sha} on #{app_name}"
+    trying_to_run_command(robot, res)
