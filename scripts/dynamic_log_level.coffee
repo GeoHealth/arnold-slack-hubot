@@ -27,11 +27,12 @@ module.exports = (robot) ->
 
   robot.respond /log_level=(.*)/i, (res) ->
     string_level = res.match[1]
-    if(string_level == 'default')
+    if string_level == 'default'
       string_level = process.env.HUBOT_LOG_LEVEL or 'info'
+
     level = string_to_level[string_level]
-    if(level == undefined)
-      res.send "Unknow level #{string_level}"
+    if level == undefined
+      res.send "Unknown level #{string_level}"
     else
       robot.logger.level = level
       show_log_level(robot, res)
