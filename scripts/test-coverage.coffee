@@ -9,6 +9,7 @@
 #
 # Commands:
 #   Test coverage .* has declined - Thumb down reaction and post message with Tanguy and Alexandre tagged
+#   Test coverage .* has improved - Thumb up reaction
 #
 # Notes:
 #   none
@@ -23,5 +24,4 @@ module.exports = (robot) ->
     res.send "@tanguy @alexandre Hey better write some tests!"
 
   robot.hear /Test coverage .* has improved/i, (res) ->
-    #robot.logger.debug res.message
     robot.adapter.client.web.reactions.add("thumbsup", {channel: res.message.room, timestamp: res.message.id})
