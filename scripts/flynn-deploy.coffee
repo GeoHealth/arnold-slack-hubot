@@ -38,8 +38,8 @@ deploy_to_flynn = (robot, res, repo_url, repo_name, commit_sha, flynn_user, flyn
   @exec = require('child_process').exec
   @exec complete_command, (error, stdout, stderr) ->
     if error
-        res.send error
-        res.send stderr
+      res.send error
+      res.send stderr
     else
       res.send "#{repo_name} deployed to #{flynn_app_name} at #{commit_sha}"
 
