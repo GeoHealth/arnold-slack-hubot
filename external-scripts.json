@@ -11,8 +11,5 @@
   "hubot-shipit",
   "hubot-reload-scripts",
   "hubot-self-uptime",
-  "hubot-wolfram-alpha",
-  "hubot-exit",
-  "hubot-execute",
-  "hubot-auth"
+  "hubot-wolfram-alpha"
 ]

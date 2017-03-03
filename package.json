@@ -6,9 +6,7 @@
   "description": "These violent delights have violent ends",
   "dependencies": {
     "hubot": "^2.19.0",
-    "hubot-auth": "^1.2.0",
     "hubot-diagnostics": "0.0.1",
-    "hubot-execute": "0.0.1",
     "hubot-exit": "^1.0.0",
     "hubot-google-images": "^0.2.6",
     "hubot-google-translate": "^0.2.0",
