@@ -33,7 +33,7 @@ deploy_to_flynn = (robot, res, repo_url, repo_name, commit_sha, flynn_user, flyn
   git_activate_certificate = "git config --global http.sslverify true"
   complete_command = git_clone + ';' + cd_to_repo_folder + ';' + git_checkout + ';' + git_deactivate_certificate + ';' + git_push + ';' + git_activate_certificate
 
-  complete_command = 'ls;mkdir test01; cd test01; touch file.me; cd ..; ls test01'
+  complete_command = 'ls;mkdir test01; cd test01; touch file.me; cd ..; ls test01; rm -rf test01; echo "almost there"; ls'
   res.send complete_command
 
   @exec = require('child_process').exec
