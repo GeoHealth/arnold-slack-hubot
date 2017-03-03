@@ -38,12 +38,9 @@ deploy_to_flynn = (robot, res, repo_url, repo_name, commit_sha, flynn_user, flyn
 
   @exec = require('child_process').exec
   @exec complete_command, (error, stdout, stderr) ->
-    if error or stderr
       res.send "ERROR: #{error}"
       res.send "STDERR: #{stderr}"
-    else
-      res.send stdout
-      res.send "#{repo_name} deployed to #{flynn_app_name} at #{commit_sha}"
+      res.send "STDOUT: #{stdout}"
 
 module.exports = (robot) ->
 
