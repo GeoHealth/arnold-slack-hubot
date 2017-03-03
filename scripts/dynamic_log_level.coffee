@@ -17,13 +17,12 @@
 # Author:
 #   seza443
 
-Log = require 'log'
 levels=['emergency', 'alert', 'critical', 'error', 'warning', 'notice', 'info', 'debug']
 
 module.exports = (robot) ->
 
   robot.respond /log_level=(.*)/i, (res) ->
-    robot.logger = new Log res.match[1]
+    robot.logger.level = res.match[1]
 
   robot.respond /log_level\?/i, (res) ->
     res.send "Current log level is #{levels[robot.logger.level]}"
