@@ -4,9 +4,10 @@
 # Configuration:
 #
 # Commands:
+#   hubot execute <command> - Execute the command
 #
 # Notes:
-#   <optional notes required for the script>
+#   none
 #
 # Author:
 #   lukasz@sredni.pl
