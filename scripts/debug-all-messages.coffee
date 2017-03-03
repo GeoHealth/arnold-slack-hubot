@@ -1,8 +1,22 @@
-# Log all the received messages at DEBUG level
-# To see the logged messages, use: 
-# export HUBOT_LOG_LEVEL="debug"
+# Description:
+#   Log all the received messages at DEBUG level
+#
+# Dependencies:
+#   none
+#
+# Configuration:
+#   HUBOT_LOG_LEVEL="debug"
+#
+# Commands:
+#   none
+#
+# Notes:
+#   none
+#
+# Author:
+#   seza443
 
 module.exports = (robot) ->
 
-  robot.hear /Test coverage has improved/i, (res) ->
+  robot.hear /.*/i, (res) ->
     robot.logger.debug res.message

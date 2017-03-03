@@ -1,9 +1,29 @@
-# Listen to messages from Travis-CI bot
+#
 #
 # Slack reactions:
 #   If build passed, thumbsup
 #   If build failed, thumbsdown
 #   If build errored, scream
+
+# Description:
+#   Listen to messages from Travis-CI bot and react
+#
+# Dependencies:
+#   none
+#
+# Configuration:
+#   none
+#
+# Commands:
+#   Build .* failed - thumbsdown and tagged message
+#   Build .* errored - scream and tagged message
+#   Build .* passed - thumbsup
+#
+# Notes:
+#   none
+#
+# Author:
+#   seza443
 
 module.exports = (robot) ->
 
