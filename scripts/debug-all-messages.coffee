@@ -19,4 +19,5 @@
 module.exports = (robot) ->
 
   robot.hear /.*/i, (res) ->
+    robot.logger.debug 'I heared: '
     robot.logger.debug res.message
