@@ -12,5 +12,6 @@
   "hubot-reload-scripts",
   "hubot-self-uptime",
   "hubot-wolfram-alpha",
-  "hubot-exit"
+  "hubot-exit",
+  "hubot-execute"
 ]
