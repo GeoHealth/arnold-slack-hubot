@@ -33,14 +33,16 @@ deploy_to_flynn = (robot, res, repo_url, repo_name, commit_sha, flynn_user, flyn
   git_activate_certificate = "git config --global http.sslverify true"
   complete_command = git_clone + ';' + cd_to_repo_folder + ';' + git_checkout + ';' + git_deactivate_certificate + ';' + git_push + ';' + git_activate_certificate
 
+  complete_command = "./deploy_flynn.bash #{repo_url} #{repo_name} #{commit_sha} #{flynn_user} #{flynn_key} #{flynn_remote_url} #{flynn_app_name}"
   res.send complete_command
 
   @exec = require('child_process').exec
   @exec complete_command, (error, stdout, stderr) ->
     if error or stderr
-      res.send error
-      res.send stderr
+      res.send "ERROR: #{error}"
+      res.send "STDERR: #{stderr}"
     else
+      res.send stdout
       res.send "#{repo_name} deployed to #{flynn_app_name} at #{commit_sha}"
 
 module.exports = (robot) ->
