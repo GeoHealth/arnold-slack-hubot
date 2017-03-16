@@ -1,5 +1,8 @@
 # Arnold
-
+[![Build Status](https://travis-ci.org/GeoHealth/arnold-slack-hubot.svg?branch=master)](https://travis-ci.org/GeoHealth/arnold-slack-hubot)
+[![Code Climate](https://codeclimate.com/github/GeoHealth/arnold-slack-hubot/badges/gpa.svg)](https://codeclimate.com/github/GeoHealth/arnold-slack-hubot)
+[![Test Coverage](https://codeclimate.com/github/GeoHealth/arnold-slack-hubot/badges/coverage.svg)](https://codeclimate.com/github/GeoHealth/arnold-slack-hubot/coverage)
+[![Issue Count](https://codeclimate.com/github/GeoHealth/arnold-slack-hubot/badges/issue_count.svg)](https://codeclimate.com/github/GeoHealth/arnold-slack-hubot)
 
 
 Arnold is a chat bot built on the [Hubot][hubot] framework. It was
