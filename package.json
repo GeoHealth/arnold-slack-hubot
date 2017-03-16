@@ -1,6 +1,6 @@
 {
   "name": "Arnold",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "author": "Geohealth Crew",
   "description": "These violent delights have violent ends",
@@ -24,7 +24,20 @@
     "hubot-slack": "^4.2.2",
     "hubot-wolfram-alpha": "0.0.5"
   },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "coffee-coverage": "^2.0.1",
+    "coffee-script": "^1.12.4",
+    "hubot-test-helper": "^1.5.1",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.2.0",
+    "nock": "^9.0.9"
+  },
   "engines": {
     "node": "0.10.x"
+  },
+  "scripts": {
+    "test": "mocha --compilers coffee:coffee-script/register --require coffee-coverage/register-istanbul tests",
+    "report-coverage": "./node_modules/.bin/istanbul report"
   }
 }
