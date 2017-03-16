@@ -31,7 +31,8 @@
     "hubot-test-helper": "^1.5.1",
     "istanbul": "^0.4.5",
     "mocha": "^3.2.0",
-    "nock": "^9.0.9"
+    "nock": "^9.0.9",
+    "random-email": "^1.0.3"
   },
   "engines": {
     "node": "0.10.x"
