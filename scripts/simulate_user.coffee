@@ -64,7 +64,7 @@ module.exports = (robot) ->
 
     console.log(nb_of_users, symptoms_names, latitude, longitude, radius)
     for i in [1..nb_of_users]
-#      user = create_user(room.robot)
+      user = create_user(room.robot)
 
     res.send 'ok'
 
