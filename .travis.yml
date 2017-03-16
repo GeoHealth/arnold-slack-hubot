@@ -1,12 +1,15 @@
 language: node_js
 node_js:
-  - "6"
+- '6'
 install:
-  - npm install
-  - npm install -g codeclimate-test-reporter
+- npm install
+- npm install -g codeclimate-test-reporter
 after_success:
-  - npm run report-coverage
-  - codeclimate-test-reporter < coverage/lcov.info
+- npm run report-coverage
+- codeclimate-test-reporter < coverage/lcov.info
 cache:
   directories:
   - node_modules
+notifications:
+  slack:
+    secure: eE67JjLXrpBo+9mHRV3olIgBNXcZyPHUlM5NtflkuJoY9T+wjwPMPaY+b1RTeX+ipBbfAC9GE7kWwB0oPH3d8gXeuW6n3M6qDF1mMeOJJIoGpElYtQTBcQjn41ZwQC0InI3HEUHbvFX3YqV8HW5S6a6QGU7i+ec4fcaaRLxO+CAI0UDsHIwBU41k3uamA3/yQH1p4+T2Q6XJBh6MXXe5rkmANl84RXopPE6Ed8qK696cj/bLbCuHwSEwvuO0iXoeKsGQXr1vrWH845rVpVgg5Flymv0wEI7755kU48T0GdKmlDXd5Lf0eabF3ZLpqqwA9DLIpyFOLfQatwmoYaKtWCp+4FHhynSEdCCqp63gdf164CmlQsXSg/KWZImbt7oAxMbYjxny4tFfnfmTQckRBA+/crDSrdNaff2TVBTZgzho5MhbI04eDMk2NNjG1zi+TFYPkg9CieG2ANSLZ+aByiduQUjc7YCIp6oEKtkwnrZ5WkblUsQjAYGiG5htEZ8pJWVCujWCvGpC4hM++QJul0dFCaTMAmjWbYs1LbHJ4RepR1hRTFRFTSvGSVBhDU7+e8ZJR+7nhGFj5gdoqTEKem1saNN+mHCIWnYp9QllsuXVrOq4ijPhtAQhiRIx6XOaMwTI/QQjFayP6u1QeGkACy4j+4yPzgWqnK6qRsHDZ08=
