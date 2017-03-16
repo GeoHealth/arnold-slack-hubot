@@ -38,17 +38,16 @@ deploy_to_flynn = (robot, res, repo_url, repo_name, commit_sha, flynn_user, flyn
 
   @exec = require('child_process').exec
   @exec complete_command, (error, stdout, stderr) ->
-      res.send "ERROR: #{error}"
-      res.send "STDERR: #{stderr}"
-      res.send "STDOUT: #{stdout}"
+    res.send "ERROR: #{error}"
+    res.send "STDERR: #{stderr}"
+    res.send "STDOUT: #{stdout}"
 
 module.exports = (robot) ->
-
   robot.hear /Build #\d+ \(.*\) \(https:\/\/.*\/.*\.\.\.(.*)\) of GeoHealth\/HAppi_backend@master.*passed.*/i, (res) ->
     commit_sha = res.match[1]
     flynn_app_name = process.env.FLYNN_DEV_APP_NAME
     repo_url = "https://github.com/GeoHealth/HAppi_backend.git"
-    repo_name= "GeoHealth/HAppi_backend"
+    repo_name = "GeoHealth/HAppi_backend"
     flynn_user = process.env.FLYNN_USER
     flynn_key = process.env.FLYNN_CLUSTER_KEY
     flynn_remote_url = process.env.FLYNN_REMOTE_URL
