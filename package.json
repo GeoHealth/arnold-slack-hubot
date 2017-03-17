@@ -32,7 +32,10 @@
     "istanbul": "^0.4.5",
     "mocha": "^3.2.0",
     "nock": "^9.0.9",
-    "random-email": "^1.0.3"
+    "random-email": "^1.0.3",
+    "sinon": "^2.0.0",
+    "sinon-chai": "^2.8.0",
+    "timekeeper": "^1.0.0"
   },
   "engines": {
     "node": "0.10.x"

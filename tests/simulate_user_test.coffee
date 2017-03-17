@@ -1,7 +1,11 @@
 Helper = require('hubot-test-helper')
 chai = require("chai");
-expect = require('chai').expect
+expect = chai.expect
 nock = require('nock')
+tk = require('timekeeper');
+sinon = require('sinon')
+sinonChai = require("sinon-chai");
+chai.use(sinonChai);
 
 # helper loads a specific script if it's a file
 helper = new Helper('../scripts/simulate_user.coffee')
@@ -152,7 +156,7 @@ describe 'get_symptom_by_name', ->
         .matchHeader('uid', fake_mail)
         .matchHeader('access-token', fake_token)
         .matchHeader('client', fake_client)
-        .post(symptoms_path)
+        .get(symptoms_path)
         .query({name: unique_symptom_name})
         .reply (uri, requestBody) ->
           return [
@@ -209,7 +213,7 @@ describe 'get_symptom_by_name', ->
         .matchHeader('uid', fake_mail)
         .matchHeader('access-token', fake_token)
         .matchHeader('client', fake_client)
-        .post(symptoms_path)
+        .get(symptoms_path)
         .query({name: common_prefix_symptom_name})
         .reply (uri, requestBody) ->
           return [
@@ -255,7 +259,7 @@ describe 'get_symptom_by_name', ->
         .matchHeader('uid', fake_mail)
         .matchHeader('access-token', fake_token)
         .matchHeader('client', fake_client)
-        .post(symptoms_path)
+        .get(symptoms_path)
         .query({name: unknown_name})
         .reply (uri, requestBody) ->
           return [
@@ -283,7 +287,7 @@ describe 'get_symptom_by_name', ->
 
     beforeEach (done) ->
       query = nock(simulation_url)
-        .post(symptoms_path)
+        .get(symptoms_path)
         .replyWithError(expected_error)
       result = room.robot.get_symptom_by_name('do not care about given name', headers)
       setTimeout done, 100
@@ -297,30 +301,387 @@ describe 'get_symptom_by_name', ->
         done()
       return
 
-
-xdescribe 'simulate', ->
+describe 'generate_occurrence', ->
   room = null
+  result = null
+  fake_symptom_id_1 = 1
+  current_date = new Date(1330688329321)
+  fake_gps_coordinate = {latitude: 50.2222222222, longitude: 4.2222222222, accuracy: 1}
+  fake_range = 100
 
   beforeEach ->
     room = helper.createRoom()
+    tk.freeze(current_date)
 
   afterEach ->
     room.destroy()
+    tk.reset()
+
+  context 'when no gps location is given', ->
+    beforeEach ->
+      result = room.robot.generate_occurrence(fake_symptom_id_1)
+
+    it 'returns an object with the key "occurrence"', ->
+      expect(result).to.have.property('occurrence')
+
+    it 'contains a symptom_id and a date', ->
+      expect(result.occurrence).to.have.property('symptom_id')
+      expect(result.occurrence).to.have.property('date')
+
+    it 'has the symptom_id equals to the given fake_symptom_id_1', ->
+      expect(result.occurrence.symptom_id).to.eq fake_symptom_id_1
+
+    it 'has the date equals to the current date', ->
+      expect(result.occurrence.date).to.eql current_date
+
+  context 'when a gps location is given but no range', ->
+    beforeEach ->
+      result = room.robot.generate_occurrence(fake_symptom_id_1, fake_gps_coordinate)
+
+    it 'returns an object with the key "occurrence"', ->
+      expect(result).to.have.property('occurrence')
+
+    it 'contains a symptom_id, a date and a gps_coordinate', ->
+      expect(result.occurrence).to.have.property('symptom_id')
+      expect(result.occurrence).to.have.property('date')
+      expect(result.occurrence).to.have.property('gps_coordinate')
+
+    it 'contains a latitude, longitude and accuracy under gps_coordinate', ->
+      expect(result.occurrence.gps_coordinate).to.have.property('latitude')
+      expect(result.occurrence.gps_coordinate).to.have.property('longitude')
+      expect(result.occurrence.gps_coordinate).to.have.property('accuracy')
+
+    it 'has the symptom_id equals to the given fake_symptom_id_1', ->
+      expect(result.occurrence.symptom_id).to.eq fake_symptom_id_1
+
+    it 'has the date equals to the current date', ->
+      expect(result.occurrence.date).to.eql current_date
+
+    it 'has the latitude equals to the given latitude', ->
+      expect(result.occurrence.gps_coordinate.latitude).to.eq fake_gps_coordinate.latitude
+
+    it 'has the longitude equals to the given longitude', ->
+      expect(result.occurrence.gps_coordinate.longitude).to.eq fake_gps_coordinate.longitude
+
+    it 'has the accuracy equals to the given accuracy', ->
+      expect(result.occurrence.gps_coordinate.accuracy).to.eq fake_gps_coordinate.accuracy
+
+  context 'when a gps location and a range are given', ->
+    beforeEach ->
+      result = room.robot.generate_occurrence(fake_symptom_id_1, fake_gps_coordinate, fake_range)
+
+    it 'returns an object with the key "occurrence"', ->
+      expect(result).to.have.property('occurrence')
+
+    it 'contains a symptom_id, a date and a gps_coordinate', ->
+      expect(result.occurrence).to.have.property('symptom_id')
+      expect(result.occurrence).to.have.property('date')
+      expect(result.occurrence).to.have.property('gps_coordinate')
+
+    it 'contains a latitude, longitude and accuracy under gps_coordinate', ->
+      expect(result.occurrence.gps_coordinate).to.have.property('latitude')
+      expect(result.occurrence.gps_coordinate).to.have.property('longitude')
+      expect(result.occurrence.gps_coordinate).to.have.property('accuracy')
+
+    it 'has the symptom_id equals to the given fake_symptom_id_1', ->
+      expect(result.occurrence.symptom_id).to.eq fake_symptom_id_1
+
+    it 'has the date equals to the current date', ->
+      expect(result.occurrence.date).to.eql current_date
+
+    it 'has the latitude equals to a random latitude', ->
+      expect(result.occurrence.gps_coordinate.latitude).not.to.eq fake_gps_coordinate.latitude
+
+    it 'has the longitude equals to a random longitude', ->
+      expect(result.occurrence.gps_coordinate.longitude).not.to.eq fake_gps_coordinate.longitude
+
+    it 'has the accuracy equals to the given accuracy', ->
+      expect(result.occurrence.gps_coordinate.accuracy).to.eq fake_gps_coordinate.accuracy
+
+
+describe 'simulate_occurrences', ->
+  room = null
+  result = null
+  query = null
+  gps_position = null
+  radius = null
+  occurrences_path = '/occurrences'
+  channel_msg = null
+  channel_msg_stub = null
+  generate_occurrence_stub = null
+
+  beforeEach ->
+    room = helper.createRoom()
+    do nock.disableNetConnect
+    channel_msg = {send: (msg) -> return}
+    channel_msg_stub = sinon.spy(channel_msg, 'send')
+
+  afterEach ->
+    room.destroy()
+    nock.cleanAll()
+
+  context 'when a correct symptom_id is given', ->
+    symptom_id = 1
+
+    context 'when headers are valid', ->
+      headers = {'access-token': fake_token, 'client': fake_client, 'uid': fake_mail}
+
+      context 'when nb_of_occurrences equals 2', ->
+        nb_of_occurrences = 2
+
+        context 'when gps_position and radius are null', ->
+          fake_occurrence = {occurrence: {symptom_id: symptom_id, date: new Date}}
+
+          beforeEach ->
+            generate_occurrence_stub = sinon.stub(room.robot, 'generate_occurrence')
+            generate_occurrence_stub.returns(fake_occurrence)
+            query = nock(simulation_url)
+              .matchHeader('uid', fake_mail)
+              .matchHeader('access-token', fake_token)
+              .matchHeader('client', fake_client)
+              .post(occurrences_path)
+              .times(nb_of_occurrences)
+              .reply (uri, requestBody) ->
+                return [
+                  201,
+                  {
+                    "id": 44,
+                    "symptom_id": requestBody.symptom_id,
+                    "date": requestBody.date,
+                    "gps_coordinate_id": null,
+                    "created_at": "2017-03-16T16:16:52.547Z",
+                    "updated_at": "2017-03-16T16:16:52.547Z",
+                    "user_id": 1
+                  },
+                  {
+                    'access-token': fake_token,
+                    'client': fake_client,
+                    'uid': fake_mail
+                  }
+                ]
+            result = room.robot.simulate_occurrences(symptom_id, headers, nb_of_occurrences, gps_position, radius, channel_msg)
+
+          afterEach ->
+            generate_occurrence_stub.reset()
+
+          it 'makes a call to generate_occurrence with the symptom_id, gps_position and radius', ->
+            expect(generate_occurrence_stub).to.have.been.calledWithExactly(symptom_id, gps_position, radius)
+
+          it 'makes 2 call to POST occurrences', ->
+            query.done()
+
+          it 'posts 2 messages to the channel with the detail of the created occurrence', (done) ->
+            setTimeout () ->
+              expect(channel_msg_stub).to.have.been.calledWithMatch(/Occurrence created.*/)
+              expect(channel_msg_stub).to.have.been.calledTwice
+              done()
+            , 100 # wait for the message to be posted
+
+        context 'when gps_position and radius are given', ->
+          gps_position = {latitude: "50.2365548", longitude: "4.25636"}
+          radius = 0
+          fake_occurrence = {occurrence: {symptom_id: symptom_id, date: new Date, gps_coordinate:  {latitude: "50.2365548", longitude: "4.25636"}}}
+
+          beforeEach ->
+            generate_occurrence_stub = sinon.stub(room.robot, 'generate_occurrence')
+            generate_occurrence_stub.returns(fake_occurrence)
+            query = nock(simulation_url)
+              .matchHeader('uid', fake_mail)
+              .matchHeader('access-token', fake_token)
+              .matchHeader('client', fake_client)
+              .post(occurrences_path)
+              .times(nb_of_occurrences)
+              .reply (uri, requestBody) ->
+                return [
+                  201,
+                  {
+                    "id": 39,
+                    "symptom_id": 200,
+                    "date": "2017-02-13T20:31:05.863Z",
+                    "gps_coordinate_id": 21,
+                    "created_at": "2017-03-16T11:12:41.123Z",
+                    "updated_at": "2017-03-16T11:12:41.123Z",
+                    "user_id": 1,
+                    "gps_coordinate": {
+                      "id": 21,
+                      "accuracy": null,
+                      "altitude": null,
+                      "altitude_accuracy": null,
+                      "heading": null,
+                      "speed": null,
+                      "latitude": 50.2365548,
+                      "longitude": 4.25636,
+                      "created_at": "2017-03-16T11:12:41.119Z",
+                      "updated_at": "2017-03-16T11:12:41.119Z"
+                    }
+                  },
+                  {
+                    'access-token': fake_token,
+                    'client': fake_client,
+                    'uid': fake_mail
+                  }
+                ]
+            result = room.robot.simulate_occurrences(symptom_id, headers, nb_of_occurrences, gps_position, radius, channel_msg)
+
+          afterEach ->
+            generate_occurrence_stub.reset()
+
+          it 'makes a call to generate_occurrence with the symptom_id, gps_position and radius', ->
+            expect(generate_occurrence_stub).to.have.been.calledWithExactly(symptom_id, gps_position, radius)
+
+          it 'makes 2 call to POST occurrences', ->
+            query.done()
+
+          it 'posts 2 messages to the channel with the detail of the created occurrence', (done) ->
+            setTimeout () ->
+              expect(channel_msg_stub).to.have.been.calledWithMatch(/Occurrence created.*/)
+              expect(channel_msg_stub).to.have.been.calledTwice
+              done()
+            , 100
+
+    context 'when headers are not valid', ->
+      headers = {'access-token': 'foo', 'client': 'bar', 'uid': 'wrong'}
+
+      context 'when nb_of_occurrences equals 2', ->
+        nb_of_occurrences = 2
+
+        context 'when gps_position and radius are null', ->
+          fake_occurrence = {occurrence: {symptom_id: symptom_id, date: new Date}}
+
+          beforeEach ->
+            generate_occurrence_stub = sinon.stub(room.robot, 'generate_occurrence')
+            generate_occurrence_stub.returns(fake_occurrence)
+            query = nock(simulation_url)
+              .matchHeader('uid', fake_mail)
+              .matchHeader('access-token', fake_token)
+              .matchHeader('client', fake_client)
+              .post(occurrences_path)
+              .times(nb_of_occurrences)
+              .replyWithError('an error')
+            result = room.robot.simulate_occurrences(symptom_id, headers, nb_of_occurrences, gps_position, radius, channel_msg)
+
+          afterEach ->
+            generate_occurrence_stub.reset()
+
+          it 'makes a call to generate_occurrence with the symptom_id, gps_position and radius', ->
+            expect(generate_occurrence_stub).to.have.been.calledWithExactly(symptom_id, gps_position, radius)
+
+          it 'posts 2 messages to the channel with the detail of the error', (done) ->
+            setTimeout () ->
+              expect(channel_msg_stub).to.have.been.calledWithMatch(/Error while doing a POST on.*/)
+              expect(channel_msg_stub).to.have.been.calledTwice
+              done()
+            , 100 # wait for the message to be posted
+
+describe 'start_simulation', ->
+  room = null
+  result = null
+  channel_msg = null
+  channel_msg_stub = null
+  create_user_stub = null
+  get_symptom_by_name_stub = null
+  simulate_occurrences_stub = null
+  fake_user_response = {user: {}, headers: {}}
+  fake_symptom = {id: 1}
+
+  beforeEach ->
+    room = helper.createRoom()
+    channel_msg = {send: (msg) -> return}
+    channel_msg_stub = sinon.spy(channel_msg, 'send')
+
+  afterEach ->
+    room.destroy()
+    create_user_stub.restore()
+    get_symptom_by_name_stub.restore()
+    simulate_occurrences_stub.restore()
+
+  context 'when nb of users = 2, symptoms names = test1 and test2, nb of occurrences are 10 and 20, gps position and radius are null', ->
+    nb_of_users = 2
+    symptoms_names = ['test1', 'test2']
+    nb_of_occurrences = [10, 20]
+    gps_position = null
+    radius = null
+
+    context 'when the user creation, occurrence simulation and search of symptoms work fine', ->
+      beforeEach (done) ->
+        create_user_stub = sinon.stub(room.robot, 'create_user')
+        create_user_stub.returns(new Promise (resolve, reject) -> resolve(fake_user_response))
+
+        simulate_occurrences_stub = sinon.stub(room.robot, 'simulate_occurrences')
+        simulate_occurrences_stub.returns(null)
+
+        get_symptom_by_name_stub = sinon.stub(room.robot, 'get_symptom_by_name')
+        get_symptom_by_name_stub.returns(new Promise (resolve, reject) -> resolve(fake_symptom))
+
+        result = room.robot.start_simulation(nb_of_users, symptoms_names, nb_of_occurrences, gps_position, radius, channel_msg)
+        setTimeout done, 100
+
+      it 'makes 2 calls to create user', ->
+        expect(create_user_stub).to.have.been.calledTwice
+
+      it 'makes 4 calls to get the id of a symptom', ->
+        expect(get_symptom_by_name_stub).to.have.been.callCount(4)
+
+      it 'makes 4 calls to simulate occurrences', ->
+        expect(simulate_occurrences_stub).to.have.been.callCount(4)
+
+
+    context 'when the user creation works fine but get_symptom_by_name fails', ->
+      beforeEach (done) ->
+        create_user_stub = sinon.stub(room.robot, 'create_user')
+        create_user_stub.returns(new Promise (resolve, reject) -> resolve(fake_user_response))
+
+        simulate_occurrences_stub = sinon.stub(room.robot, 'simulate_occurrences')
+        simulate_occurrences_stub.returns(null)
+
+        get_symptom_by_name_stub = sinon.stub(room.robot, 'get_symptom_by_name')
+        get_symptom_by_name_stub.returns(new Promise (resolve, reject) -> reject(null))
+
+        result = room.robot.start_simulation(nb_of_users, symptoms_names, nb_of_occurrences, gps_position, radius, channel_msg)
+        setTimeout done, 100
+
+      it 'writes and error to the channel 4 times', ->
+        expect(channel_msg_stub).to.have.been.callCount(4)
+        expect(channel_msg_stub).to.always.have.been.calledWithMatch(/Error while searching for the ID of the symptom.*/)
+
+    context 'when the user creation fails', ->
+      beforeEach (done) ->
+        create_user_stub = sinon.stub(room.robot, 'create_user')
+        create_user_stub.returns(new Promise (resolve, reject) -> resolve(reject(null)))
+
+        simulate_occurrences_stub = sinon.stub(room.robot, 'simulate_occurrences')
+        simulate_occurrences_stub.returns(null)
+
+        get_symptom_by_name_stub = sinon.stub(room.robot, 'get_symptom_by_name')
+        get_symptom_by_name_stub.returns(new Promise (resolve, reject) -> resolve(fake_symptom))
+
+        result = room.robot.start_simulation(nb_of_users, symptoms_names, nb_of_occurrences, gps_position, radius, channel_msg)
+        setTimeout done, 100
+
+      it 'writes and error to the channel 2 times', ->
+        expect(channel_msg_stub).to.have.been.callCount(2)
+        expect(channel_msg_stub).to.always.have.been.calledWithMatch(/Error creating user.*/)
+
+
+describe 'simulate', ->
+  room = null
+  start_simulation_stub = null
+
+  beforeEach ->
+    room = helper.createRoom()
+    start_simulation_stub = sinon.stub(room.robot, 'start_simulation')
+    start_simulation_stub.returns(null)
+
+  afterEach ->
+    room.destroy()
+    start_simulation_stub.restore()
 
   context 'when user says simulate with 2 users and 2 symptoms, one for 1 occurrence and the second for 2 occurrences, without gps localisation parameters to hubot', ->
-    beforeEach ->
-      # TODO NOTE Je ne vais pas avoir besoin de simuler l'entiereté des requetes HTTP.
-      # TODO NOTE Je vais simplement faire un stub des méthodes create_user, get_symptom_by_name, create_occurrence et vérifier qu'ils ont bien été appelés le bon nombre de fois avec les bons paramètres (en utilisant Sinon.js)
-      # TODO NOTE c'est donc uniquement lorsque je teste ces méthodes que je vais mocker les requetes HTTP
+    beforeEach (done) ->
+      room.user.say 'alice', 'hubot simulate users=2 symptoms=test1;1;test2;2;'
+      setTimeout done, 100
 
-      room.user.say 'alice', 'hubot simulate users=2 symptoms=Abdominal Pain;1;Divergent strabismus;2;'
+    it 'calls start_simulation once', ->
+      expect(start_simulation_stub).to.have.been.calledOnce
 
-    it 'makes 2 calls to the API to create users and 6 calls to the API to create occurrences', ->
-      #todo
-#      Stub the HTTP POST call
-#      sinon.stub(room.robot.http, 'post');
-      expect(requests.length).to.eq 10
-
-    xit 'stores 2 users in the brain of hubot', ->
-      #todo
 
