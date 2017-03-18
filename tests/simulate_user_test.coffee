@@ -684,4 +684,28 @@ describe 'simulate', ->
     it 'calls start_simulation once', ->
       expect(start_simulation_stub).to.have.been.calledOnce
 
+  context 'when the environment variable SIMULATION_API_BASE_URL is not set', ->
+    beforeEach (done) ->
+      delete process.env.SIMULATION_API_BASE_URL
+      room.user.say 'alice', 'hubot simulate users=2 symptoms=test1;1;test2;2;'
+      setTimeout done, 100
 
+    afterEach ->
+      process.env.SIMULATION_API_BASE_URL = simulation_url
+
+    it 'responds with an error message: Please set the environment variable SIMULATION_API_BASE_URL', ->
+      expect(room.messages).to.eql [
+        ['alice', 'hubot simulate users=2 symptoms=test1;1;test2;2;']
+        ['hubot', 'Please set the environment variable SIMULATION_API_BASE_URL']
+      ]
+
+  context 'when not every symptom has a number of occurrences', ->
+    beforeEach (done) ->
+      room.user.say 'alice', 'hubot simulate users=2 symptoms=test1;test2;2;'
+      setTimeout done, 100
+
+    it 'responds with an error message: Error: test1;test2;2 is not valid. Please ensure it respect the format : (symptom_name;nb_of_occurrences;)+', ->
+      expect(room.messages).to.eql [
+        ['alice', 'hubot simulate users=2 symptoms=test1;test2;2;']
+        ['hubot', 'Error: test1;test2;2 is not valid. Please ensure it respect the format : (symptom_name;nb_of_occurrences;)+']
+      ]

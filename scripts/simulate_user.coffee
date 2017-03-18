@@ -121,22 +121,21 @@ module.exports = (robot) ->
           msg.send "Error creating user #{user_no}. Nothing was simulated for him :crying_cat_face:. Error: #{err}"
 
   robot.respond /simulate users=(\d+) symptoms=(.*);(?: latitude=((?:\d*\.)?\d+) longitude=((?:\d*\.)?\d+) radius=(\d+))?/i, (msg) ->
-    if !api_path
+    if !process.env.SIMULATION_API_BASE_URL
       msg.send 'Please set the environment variable SIMULATION_API_BASE_URL'
-      return
+    else
+      nb_of_users = msg.match[1]
+      symptoms_names_and_nb_of_occurrences = msg.match[2]
+      gps_position = {latitude: parseFloat(msg.match[3]), longitude: parseFloat(msg.match[4])}
+      radius = parseInt(msg.match[5], 10)
+      symptoms_names = symptoms_names_and_nb_of_occurrences.split(';').filter((elm, index, arr) -> return index % 2 == 0) #take all even elements
+      nb_of_occurrences = symptoms_names_and_nb_of_occurrences.split(';').filter((elm, index, arr) -> return index % 2 == 1) #take all odd elements
 
-    nb_of_users = msg.match[1]
-    symptoms_names_and_nb_of_occurrences = msg.match[2]
-    gps_position = {latitude: parseFloat(msg.match[3]), longitude: parseFloat(msg.match[4])}
-    radius = parseInt(msg.match[5], 10)
-    symptoms_names = symptoms_names_and_nb_of_occurrences.split(';').filter((elm, index, arr) -> return index % 2 == 0) #take all even elements
-    nb_of_occurrences = symptoms_names_and_nb_of_occurrences.split(';').filter((elm, index, arr) -> return index % 2 == 1) #take all odd elements
+      if symptoms_names.length != nb_of_occurrences.length
+        msg.send "Error: #{symptoms_names_and_nb_of_occurrences} is not valid. Please ensure it respect the format : (symptom_name;nb_of_occurrences;)+"
+        return
 
-    if symptoms_names.length != nb_of_occurrences.length
-      msg.send "Error: #{symptoms_names_and_nb_of_occurrences} is not valid. Please ensure it respect the format : (symptom_name;nb_of_occurrences;)+"
-      return
+      robot.start_simulation(nb_of_users, symptoms_names, nb_of_occurrences, gps_position, radius, msg)
 
-    robot.start_simulation(nb_of_users, symptoms_names, nb_of_occurrences, gps_position, radius, msg)
-
-    msg.send "Ok, I will simulate #{nb_of_users} users, each having those symptoms #{symptoms_names} respectively #{nb_of_occurrences} times and the users will be located in random location near #{gps_position} with a radius of #{radius}"
+      msg.send "Ok, I will simulate #{nb_of_users} users, each having those symptoms #{symptoms_names} respectively #{nb_of_occurrences} times and the users will be located in random location near #{gps_position} with a radius of #{radius}"
 
