@@ -22,6 +22,7 @@
     "hubot-sentiment": "^1.2.7",
     "hubot-shipit": "^0.2.0",
     "hubot-slack": "^4.2.2",
+    "random-email": "^1.0.3",
     "hubot-wolfram-alpha": "0.0.5"
   },
   "devDependencies": {
@@ -32,7 +33,6 @@
     "istanbul": "^0.4.5",
     "mocha": "^3.2.0",
     "nock": "^9.0.9",
-    "random-email": "^1.0.3",
     "sinon": "^2.0.0",
     "sinon-chai": "^2.8.0",
     "timekeeper": "^1.0.0"
