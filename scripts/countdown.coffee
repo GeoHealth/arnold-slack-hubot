@@ -13,5 +13,4 @@
 module.exports = (robot) ->
     robot.respond /deadline/i, (msg) ->
         today = new Date
-        day = today.getDay()
-        msg.send "day"
+        msg.send today.toTimeString()
