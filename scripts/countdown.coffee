@@ -8,20 +8,10 @@
 #   None
 #
 # Commands:
-#   hubot countdown <x> - Count down from [x] to 0, at one second intervals
+#   hubot deadline - Show the number of days
 #
 module.exports = (robot) ->
-    robot.respond /thesisDeadline /i, (msg) ->
-        days = 76
-        tick = () ->
-            msg.send "#{count--}"
-            if count > 0
-                setTimeout(tick, 86400)
-            else
-                setTimeout(go, 86400)
-        go = () ->
-            msg.send days + "avant la deadline du mémoire"
-            days = days - 1
-        if count <= 0
-            return
-        tick()
+    robot.respond /deadline /i, (msg) ->
+        today = new Date
+        day = today.getDay()
+        msg.send day
