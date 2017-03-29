@@ -21,6 +21,7 @@ module.exports = (robot) ->
                 setTimeout(go, 86400)
         go = () ->
             msg.send days + "avant la deadline du mémoire"
+            days = days - 1
         if count <= 0
             return
         tick()
