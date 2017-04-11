@@ -305,9 +305,11 @@ describe 'generate_occurrence', ->
   room = null
   result = null
   fake_symptom_id_1 = 1
-  current_date = new Date(1330688329321)
+  current_date = new Date(1332671929000)    # 25/03/2012
   fake_gps_coordinate = {latitude: 50.2222222222, longitude: 4.2222222222, accuracy: 1}
   fake_range = 100
+  fake_start_date = new Date(1331379529000) # 10/03/2012
+  fake_end_date = new Date(1332243529000)   # 20/03/2012
 
   beforeEach ->
     room = helper.createRoom()
@@ -317,7 +319,7 @@ describe 'generate_occurrence', ->
     room.destroy()
     tk.reset()
 
-  context 'when no gps location is given', ->
+  context 'when no gps location and no dates are given', ->
     beforeEach ->
       result = room.robot.generate_occurrence(fake_symptom_id_1)
 
@@ -389,14 +391,101 @@ describe 'generate_occurrence', ->
     it 'has the date equals to the current date', ->
       expect(result.occurrence.date).to.eql current_date
 
-    it 'has the latitude equals to a random latitude', ->
-      expect(result.occurrence.gps_coordinate.latitude).not.to.eq fake_gps_coordinate.latitude
+    it 'has the latitude equals to a random latitude close to the original one', ->
+      expect(result.occurrence.gps_coordinate.latitude).to.be.closeTo(fake_gps_coordinate.latitude, 0.005)
 
-    it 'has the longitude equals to a random longitude', ->
-      expect(result.occurrence.gps_coordinate.longitude).not.to.eq fake_gps_coordinate.longitude
+    it 'has the longitude equals to a random longitude close to the original one', ->
+      expect(result.occurrence.gps_coordinate.longitude).to.be.closeTo(fake_gps_coordinate.longitude, 0.005)
 
     it 'has the accuracy equals to the given accuracy', ->
       expect(result.occurrence.gps_coordinate.accuracy).to.eq fake_gps_coordinate.accuracy
+
+
+  context 'when a start_date and end_date are given as date', ->
+    beforeEach ->
+      result = room.robot.generate_occurrence(fake_symptom_id_1, null, 0, fake_start_date, fake_end_date)
+
+    it 'returns an object with the key "occurrence"', ->
+      expect(result).to.have.property('occurrence')
+
+    it 'contains a symptom_id, a date and a gps_coordinate', ->
+      expect(result.occurrence).to.have.property('symptom_id')
+      expect(result.occurrence).to.have.property('date')
+
+    it 'has the symptom_id equals to the given fake_symptom_id_1', ->
+      expect(result.occurrence.symptom_id).to.eq fake_symptom_id_1
+
+    it 'has the date somewhere in the range of start_date and end_date', ->
+      expect(result.occurrence.date).to.within(fake_start_date, fake_end_date)
+
+  context 'when a start_date is given as date and end_date is null', ->
+    beforeEach ->
+      result = room.robot.generate_occurrence(fake_symptom_id_1, null, 0, fake_start_date, null)
+
+    it 'returns an object with the key "occurrence"', ->
+      expect(result).to.have.property('occurrence')
+
+    it 'contains a symptom_id, a date and a gps_coordinate', ->
+      expect(result.occurrence).to.have.property('symptom_id')
+      expect(result.occurrence).to.have.property('date')
+
+    it 'has the symptom_id equals to the given fake_symptom_id_1', ->
+      expect(result.occurrence.symptom_id).to.eq fake_symptom_id_1
+
+    it 'has the date somewhere in the range of start_date and current_date', ->
+      expect(result.occurrence.date).to.within(fake_start_date, current_date)
+
+  context 'when a start_date and end_date are given as string (without hours)', ->
+    beforeEach ->
+      result = room.robot.generate_occurrence(fake_symptom_id_1, null, 0, '10-03-2012', '20-03-2012')
+
+    it 'returns an object with the key "occurrence"', ->
+      expect(result).to.have.property('occurrence')
+
+    it 'contains a symptom_id, a date and a gps_coordinate', ->
+      expect(result.occurrence).to.have.property('symptom_id')
+      expect(result.occurrence).to.have.property('date')
+
+    it 'has the symptom_id equals to the given fake_symptom_id_1', ->
+      expect(result.occurrence.symptom_id).to.eq fake_symptom_id_1
+
+    it 'has the date somewhere in the range of start_date and end_date', ->
+      expect(result.occurrence.date).to.within(fake_start_date, fake_end_date)
+
+  context 'when a start_date and end_date are given as string (with hours)', ->
+    beforeEach ->
+      result = room.robot.generate_occurrence(fake_symptom_id_1, null, 0, '10-03-2012 12:30:00', '20-03-2012 10:00:00')
+
+    it 'returns an object with the key "occurrence"', ->
+      expect(result).to.have.property('occurrence')
+
+    it 'contains a symptom_id, a date and a gps_coordinate', ->
+      expect(result.occurrence).to.have.property('symptom_id')
+      expect(result.occurrence).to.have.property('date')
+
+    it 'has the symptom_id equals to the given fake_symptom_id_1', ->
+      expect(result.occurrence.symptom_id).to.eq fake_symptom_id_1
+
+    it 'has the date somewhere in the range of start_date and end_date', ->
+      expect(result.occurrence.date).to.within(fake_start_date, fake_end_date)
+
+  context 'when a start_date and end_date are given as string in an invalid format', ->
+    beforeEach ->
+      result = room.robot.generate_occurrence(fake_symptom_id_1, null, 0, '10 03/2012', '20 03/2012')
+
+    it 'returns an object with the key "occurrence"', ->
+      expect(result).to.have.property('occurrence')
+
+    it 'contains a symptom_id, a date and a gps_coordinate', ->
+      expect(result.occurrence).to.have.property('symptom_id')
+      expect(result.occurrence).to.have.property('date')
+
+    it 'has the symptom_id equals to the given fake_symptom_id_1', ->
+      expect(result.occurrence.symptom_id).to.eq fake_symptom_id_1
+
+    it 'has the date equals null', ->
+      expect(result.occurrence.date).to.be.null
+
 
 
 describe 'simulate_occurrences', ->
@@ -409,6 +498,8 @@ describe 'simulate_occurrences', ->
   channel_msg = null
   channel_msg_stub = null
   generate_occurrence_stub = null
+  start_date = null
+  end_date = null
 
   beforeEach ->
     room = helper.createRoom()
@@ -429,7 +520,7 @@ describe 'simulate_occurrences', ->
       context 'when nb_of_occurrences equals 2', ->
         nb_of_occurrences = 2
 
-        context 'when gps_position and radius are null', ->
+        context 'when gps_position, radius, start_date and end_date are null', ->
           fake_occurrence = {occurrence: {symptom_id: symptom_id, date: new Date}}
 
           beforeEach ->
@@ -459,13 +550,13 @@ describe 'simulate_occurrences', ->
                     'uid': fake_mail
                   }
                 ]
-            result = room.robot.simulate_occurrences(symptom_id, headers, nb_of_occurrences, gps_position, radius, channel_msg)
+            result = room.robot.simulate_occurrences(symptom_id, headers, nb_of_occurrences, gps_position, radius, channel_msg, start_date, end_date)
 
           afterEach ->
             generate_occurrence_stub.reset()
 
-          it 'makes a call to generate_occurrence with the symptom_id, gps_position and radius', ->
-            expect(generate_occurrence_stub).to.have.been.calledWithExactly(symptom_id, gps_position, radius)
+          it 'makes a call to generate_occurrence with the symptom_id, gps_position, radius, start_date and end_date', ->
+            expect(generate_occurrence_stub).to.have.been.calledWithExactly(symptom_id, gps_position, radius, start_date, end_date)
 
           it 'makes 2 call to POST occurrences', ->
             query.done()
@@ -521,13 +612,13 @@ describe 'simulate_occurrences', ->
                     'uid': fake_mail
                   }
                 ]
-            result = room.robot.simulate_occurrences(symptom_id, headers, nb_of_occurrences, gps_position, radius, channel_msg)
+            result = room.robot.simulate_occurrences(symptom_id, headers, nb_of_occurrences, gps_position, radius, channel_msg, start_date, end_date)
 
           afterEach ->
             generate_occurrence_stub.reset()
 
           it 'makes a call to generate_occurrence with the symptom_id, gps_position and radius', ->
-            expect(generate_occurrence_stub).to.have.been.calledWithExactly(symptom_id, gps_position, radius)
+            expect(generate_occurrence_stub).to.have.been.calledWithExactly(symptom_id, gps_position, radius, start_date, end_date)
 
           it 'makes 2 call to POST occurrences', ->
             query.done()
@@ -558,13 +649,13 @@ describe 'simulate_occurrences', ->
               .post(occurrences_path)
               .times(nb_of_occurrences)
               .replyWithError('an error')
-            result = room.robot.simulate_occurrences(symptom_id, headers, nb_of_occurrences, gps_position, radius, channel_msg)
+            result = room.robot.simulate_occurrences(symptom_id, headers, nb_of_occurrences, gps_position, radius, channel_msg, start_date, end_date)
 
           afterEach ->
             generate_occurrence_stub.reset()
 
           it 'makes a call to generate_occurrence with the symptom_id, gps_position and radius', ->
-            expect(generate_occurrence_stub).to.have.been.calledWithExactly(symptom_id, gps_position, radius)
+            expect(generate_occurrence_stub).to.have.been.calledWithExactly(symptom_id, gps_position, radius, start_date, end_date)
 
           it 'posts 2 messages to the channel with the detail of the error', (done) ->
             setTimeout () ->
@@ -595,12 +686,14 @@ describe 'start_simulation', ->
     get_symptom_by_name_stub.restore()
     simulate_occurrences_stub.restore()
 
-  context 'when nb of users = 2, symptoms names = test1 and test2, nb of occurrences are 10 and 20, gps position and radius are null', ->
+  context 'when nb of users = 2, symptoms names = test1 and test2, nb of occurrences are 10 and 20, gps position radius, start_date and end_date are null', ->
     nb_of_users = 2
     symptoms_names = ['test1', 'test2']
     nb_of_occurrences = [10, 20]
     gps_position = null
     radius = null
+    start_date = null
+    end_date = null
 
     context 'when the user creation, occurrence simulation and search of symptoms work fine', ->
       beforeEach (done) ->
@@ -613,7 +706,7 @@ describe 'start_simulation', ->
         get_symptom_by_name_stub = sinon.stub(room.robot, 'get_symptom_by_name')
         get_symptom_by_name_stub.returns(new Promise (resolve, reject) -> resolve(fake_symptom))
 
-        result = room.robot.start_simulation(nb_of_users, symptoms_names, nb_of_occurrences, gps_position, radius, channel_msg)
+        result = room.robot.start_simulation(nb_of_users, symptoms_names, nb_of_occurrences, gps_position, radius, channel_msg, start_date, end_date)
         setTimeout done, 100
 
       it 'makes 2 calls to create user', ->

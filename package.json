@@ -22,8 +22,9 @@
     "hubot-sentiment": "^1.2.7",
     "hubot-shipit": "^0.2.0",
     "hubot-slack": "^4.2.2",
-    "random-email": "^1.0.3",
-    "hubot-wolfram-alpha": "0.0.5"
+    "hubot-wolfram-alpha": "0.0.5",
+    "moment": "^2.18.1",
+    "random-email": "^1.0.3"
   },
   "devDependencies": {
     "chai": "^3.5.0",
