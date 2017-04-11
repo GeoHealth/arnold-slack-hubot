@@ -416,7 +416,7 @@ describe 'generate_occurrence', ->
       expect(result.occurrence.symptom_id).to.eq fake_symptom_id_1
 
     it 'has the date somewhere in the range of start_date and end_date', ->
-      expect(result.occurrence.date).to.within(fake_start_date, fake_end_date)
+      expect(result.occurrence.date).to.be.within(fake_start_date, fake_end_date)
 
   context 'when a start_date is given as date and end_date is null', ->
     beforeEach ->
@@ -433,7 +433,7 @@ describe 'generate_occurrence', ->
       expect(result.occurrence.symptom_id).to.eq fake_symptom_id_1
 
     it 'has the date somewhere in the range of start_date and current_date', ->
-      expect(result.occurrence.date).to.within(fake_start_date, current_date)
+      expect(result.occurrence.date).to.be.within(fake_start_date, current_date)
 
   context 'when a start_date and end_date are given as string (without hours)', ->
     beforeEach ->
@@ -450,7 +450,7 @@ describe 'generate_occurrence', ->
       expect(result.occurrence.symptom_id).to.eq fake_symptom_id_1
 
     it 'has the date somewhere in the range of start_date and end_date', ->
-      expect(result.occurrence.date).to.within(fake_start_date, fake_end_date)
+      expect(result.occurrence.date).to.be.within(fake_start_date, fake_end_date)
 
   context 'when a start_date and end_date are given as string (with hours)', ->
     beforeEach ->
@@ -467,7 +467,7 @@ describe 'generate_occurrence', ->
       expect(result.occurrence.symptom_id).to.eq fake_symptom_id_1
 
     it 'has the date somewhere in the range of start_date and end_date', ->
-      expect(result.occurrence.date).to.within(fake_start_date, fake_end_date)
+      expect(result.occurrence.date).to.be.within(fake_start_date, fake_end_date)
 
   context 'when a start_date and end_date are given as string in an invalid format', ->
     beforeEach ->
