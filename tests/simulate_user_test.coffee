@@ -400,7 +400,6 @@ describe 'generate_occurrence', ->
     it 'has the accuracy equals to the given accuracy', ->
       expect(result.occurrence.gps_coordinate.accuracy).to.eq fake_gps_coordinate.accuracy
 
-
   context 'when a start_date and end_date are given as date', ->
     beforeEach ->
       result = room.robot.generate_occurrence(fake_symptom_id_1, null, 0, fake_start_date, fake_end_date)
@@ -454,7 +453,7 @@ describe 'generate_occurrence', ->
 
   context 'when a start_date and end_date are given as string (with hours)', ->
     beforeEach ->
-      result = room.robot.generate_occurrence(fake_symptom_id_1, null, 0, '10-03-2012 12:30:00', '20-03-2012 10:00:00')
+      result = room.robot.generate_occurrence(fake_symptom_id_1, null, 0, '10-03-2012 00:00:00', '20-03-2012 00:00:00')
 
     it 'returns an object with the key "occurrence"', ->
       expect(result).to.have.property('occurrence')
@@ -483,8 +482,8 @@ describe 'generate_occurrence', ->
     it 'has the symptom_id equals to the given fake_symptom_id_1', ->
       expect(result.occurrence.symptom_id).to.eq fake_symptom_id_1
 
-    it 'has the date equals null', ->
-      expect(result.occurrence.date).to.be.null
+    it 'has the date equals the current date', ->
+      expect(result.occurrence.date).to.eql current_date
 
 
 

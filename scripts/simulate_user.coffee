@@ -56,7 +56,7 @@ random_date = (start_date, end_date) ->
   if (!(start_date.getTime()) || !(end_date.getTime()))
     null
   else
-    new Date(start_date.getTime() + Math.random() * (end_date.getTime() - start_date.getTime()));
+    new Date(start_date.getTime() + Math.floor(Math.random() * (end_date.getTime() - start_date.getTime())));
 
 module.exports = (robot) ->
   api_path = process.env.SIMULATION_API_BASE_URL
@@ -98,7 +98,7 @@ module.exports = (robot) ->
   robot.generate_occurrence = (symptom_id, gps_position = null, radius = 0, start_date = null, end_date = null) ->
     date = new Date
     if start_date && end_date
-      date = random_date(start_date, end_date)
+      date = random_date(start_date, end_date) || new Date
     if gps_position && gps_position.latitude && gps_position.longitude
       if radius != undefined && radius != 0
         gps_position = generate_random_coordinate(gps_position, radius)
@@ -146,7 +146,7 @@ module.exports = (robot) ->
       symptoms_names = symptoms_names_and_nb_of_occurrences.split(';').filter((elm, index, arr) -> return index % 2 == 0) #take all even elements
       nb_of_occurrences = symptoms_names_and_nb_of_occurrences.split(';').filter((elm, index, arr) -> return index % 2 == 1) #take all odd elements
       start_date = msg.match[6]
-      end_date = msg.match[6]
+      end_date = msg.match[7]
 
       if symptoms_names.length != nb_of_occurrences.length
         msg.send "Error: #{symptoms_names_and_nb_of_occurrences} is not valid. Please ensure it respect the format : (symptom_name;nb_of_occurrences;)+"
