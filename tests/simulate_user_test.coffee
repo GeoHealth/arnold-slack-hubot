@@ -305,11 +305,11 @@ describe 'generate_occurrence', ->
   room = null
   result = null
   fake_symptom_id_1 = 1
-  current_date = new Date(1332671929000)    # 25/03/2012
+  current_date = new Date(1332671929000)    # 25/03/2012 à 12:38:49
   fake_gps_coordinate = {latitude: 50.2222222222, longitude: 4.2222222222, accuracy: 1}
   fake_range = 100
-  fake_start_date = new Date(1331379529000) # 10/03/2012
-  fake_end_date = new Date(1332243529000)   # 20/03/2012
+  fake_start_date = new Date(1331334000000) # 10/03/2012 à 00:00:00
+  fake_end_date = new Date(1332198000000)   # 20/03/2012 à 00:00:00
 
   beforeEach ->
     room = helper.createRoom()
