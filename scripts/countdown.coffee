@@ -13,7 +13,7 @@
 module.exports = (robot) ->
     robot.respond /deadline/i, (msg) ->
         today = new Date
-        deadlineDate =new Date(2017,5,13,23,55)
+        deadlineDate = new Date(Date.UTC(2017,5,9,21,59))
         result = deadlineDate - today
         x = result / 1000
         seconds = x % 60
