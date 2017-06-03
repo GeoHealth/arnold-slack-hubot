@@ -657,7 +657,7 @@ describe 'simulate_occurrence', ->
 describe 'simulate_occurrence_with_delay', ->
   room = null
   simulate_occurrence_stub = null
-  delay = 20
+  delay = 1
 
   beforeEach ->
     room = helper.createRoom()
@@ -667,11 +667,28 @@ describe 'simulate_occurrence_with_delay', ->
   afterEach ->
     room.destroy()
 
-  it 'makes 1 calls to simulate_occurrence_with_delay', (done) ->
-    setTimeout () ->
-      expect(simulate_occurrence_stub).to.have.been.calledOnce
-      done()
-    , delay * 2 # wait for async call to be made
+  context 'when SIMULATION_ADDITIONAL_TIME is set', () ->
+    beforeEach ->
+      process.env.SIMULATION_ADDITIONAL_TIME = 10
+
+    afterEach ->
+      delete process.env.SIMULATION_ADDITIONAL_TIME
+
+    it 'makes 1 calls to simulate_occurrence_with_delay', (done) ->
+      setTimeout () ->
+        expect(simulate_occurrence_stub).to.have.been.calledOnce
+        done()
+      , 1500
+
+  context 'when SIMULATION_ADDITIONAL_TIME is not set', () ->
+    beforeEach ->
+      delete process.env.SIMULATION_ADDITIONAL_TIME
+
+    it 'makes 1 calls to simulate_occurrence_with_delay', (done) ->
+      setTimeout () ->
+        expect(simulate_occurrence_stub).to.have.been.calledOnce
+        done()
+      , 1100
 
 describe 'simulate_occurrences', ->
   room = null

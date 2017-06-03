@@ -123,7 +123,7 @@ module.exports = (robot) ->
   robot.simulate_occurrence_with_delay = (symptom_id, headers, gps_position, radius, channel_res, start_date, end_date, delay) ->
     setTimeout(() ->
       robot.simulate_occurrence(symptom_id, headers, gps_position, radius, channel_res, start_date, end_date)
-    , delay)
+    , delay * 1000 + delay * (parseInt(process.env.SIMULATION_ADDITIONAL_TIME, 10) || 0)) # compute delay in seconds and add a gap of SIMULATION_ADDITIONAL_TIME
 
   robot.simulate_occurrences = (symptom_id, headers, nb_of_occurrences, gps_position, radius, channel_res, start_date, end_date, delay) ->
     for i in [1..nb_of_occurrences]
@@ -139,7 +139,7 @@ module.exports = (robot) ->
             do (index = j) ->
               robot.get_symptom_by_name(symptoms_names[index], headers).then (symptom) ->
                 robot.simulate_occurrences(symptom.id, headers, nb_of_occurrences[index], gps_position, radius, msg, start_date, end_date, delay)
-                delay += nb_of_occurrences[index]
+                delay += parseInt(nb_of_occurrences[index], 10)
               .catch (err) ->
                 msg.send "Error while searching for the ID of the symptom #{symptoms_names[j]}. No occurrence will be created for this symptom :-1:. Error: #{err}"
         .catch (err) ->
