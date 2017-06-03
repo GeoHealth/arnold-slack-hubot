@@ -13,6 +13,23 @@ deployed on [Heroku][heroku] to get you up and running as quick as possible.
 [hubot]: http://hubot.github.com
 [generator-hubot]: https://github.com/github/generator-hubot
 
+## Description
+This chatbot is used to
+
+- Notify team members when a build fails or errors
+- Motivate the team by reacting to Slack's messages
+- Automatically deploy the [backend](https://github.com/GeoHealth/HAppi_backend) to the **dev** environment of Flynn
+- Simulate patients
+
+## Commands
+
+- `@arnold simulate users=10 symptoms=Abdominal Pain;10; latitude=50.673856 longitude=4.23655 radius=100 start_date=10-04-2017 end_date=20-04-2017`
+
+
+---
+
+Original README below
+
 ### Running Arnold Locally
 
 You can test your hubot by running the following, however some plugins will not
