@@ -487,7 +487,7 @@ describe 'generate_occurrence', ->
 
 
 
-describe 'simulate_occurrences', ->
+describe 'simulate_occurrence', ->
   room = null
   result = null
   query = null
@@ -516,152 +516,178 @@ describe 'simulate_occurrences', ->
     context 'when headers are valid', ->
       headers = {'access-token': fake_token, 'client': fake_client, 'uid': fake_mail}
 
-      context 'when nb_of_occurrences equals 2', ->
-        nb_of_occurrences = 2
+      context 'when gps_position, radius, start_date and end_date are null', ->
+        fake_occurrence = {occurrence: {symptom_id: symptom_id, date: new Date}}
 
-        context 'when gps_position, radius, start_date and end_date are null', ->
-          fake_occurrence = {occurrence: {symptom_id: symptom_id, date: new Date}}
+        beforeEach ->
+          generate_occurrence_stub = sinon.stub(room.robot, 'generate_occurrence')
+          generate_occurrence_stub.returns(fake_occurrence)
+          query = nock(simulation_url)
+            .matchHeader('uid', fake_mail)
+            .matchHeader('access-token', fake_token)
+            .matchHeader('client', fake_client)
+            .post(occurrences_path)
+            .reply (uri, requestBody) ->
+              return [
+                201,
+                {
+                  "id": 44,
+                  "symptom_id": requestBody.symptom_id,
+                  "date": requestBody.date,
+                  "gps_coordinate_id": null,
+                  "created_at": "2017-03-16T16:16:52.547Z",
+                  "updated_at": "2017-03-16T16:16:52.547Z",
+                  "user_id": 1
+                },
+                {
+                  'access-token': fake_token,
+                  'client': fake_client,
+                  'uid': fake_mail
+                }
+              ]
+          result = room.robot.simulate_occurrence(symptom_id, headers, gps_position, radius, channel_msg, start_date, end_date)
 
-          beforeEach ->
-            generate_occurrence_stub = sinon.stub(room.robot, 'generate_occurrence')
-            generate_occurrence_stub.returns(fake_occurrence)
-            query = nock(simulation_url)
-              .matchHeader('uid', fake_mail)
-              .matchHeader('access-token', fake_token)
-              .matchHeader('client', fake_client)
-              .post(occurrences_path)
-              .times(nb_of_occurrences)
-              .reply (uri, requestBody) ->
-                return [
-                  201,
-                  {
-                    "id": 44,
-                    "symptom_id": requestBody.symptom_id,
-                    "date": requestBody.date,
-                    "gps_coordinate_id": null,
-                    "created_at": "2017-03-16T16:16:52.547Z",
-                    "updated_at": "2017-03-16T16:16:52.547Z",
-                    "user_id": 1
-                  },
-                  {
-                    'access-token': fake_token,
-                    'client': fake_client,
-                    'uid': fake_mail
+        afterEach ->
+          generate_occurrence_stub.reset()
+
+        it 'makes a call to generate_occurrence with the symptom_id, gps_position, radius, start_date and end_date', ->
+          expect(generate_occurrence_stub).to.have.been.calledWithExactly(symptom_id, gps_position, radius, start_date, end_date)
+
+        it 'makes 1 call to POST occurrences', ->
+          query.done()
+
+        it 'posts 1 messages to the channel with the detail of the created occurrence', (done) ->
+          setTimeout () ->
+            expect(channel_msg_stub).to.have.been.calledWithMatch(/Occurrence created.*/)
+            expect(channel_msg_stub).to.have.been.calledOnce
+            done()
+          , 100 # wait for the message to be posted
+
+      context 'when gps_position and radius are given', ->
+        gps_position = {latitude: "50.2365548", longitude: "4.25636"}
+        radius = 0
+        fake_occurrence = {occurrence: {symptom_id: symptom_id, date: new Date, gps_coordinate:  {latitude: "50.2365548", longitude: "4.25636"}}}
+
+        beforeEach ->
+          generate_occurrence_stub = sinon.stub(room.robot, 'generate_occurrence')
+          generate_occurrence_stub.returns(fake_occurrence)
+          query = nock(simulation_url)
+            .matchHeader('uid', fake_mail)
+            .matchHeader('access-token', fake_token)
+            .matchHeader('client', fake_client)
+            .post(occurrences_path)
+            .reply (uri, requestBody) ->
+              return [
+                201,
+                {
+                  "id": 39,
+                  "symptom_id": 200,
+                  "date": "2017-02-13T20:31:05.863Z",
+                  "gps_coordinate_id": 21,
+                  "created_at": "2017-03-16T11:12:41.123Z",
+                  "updated_at": "2017-03-16T11:12:41.123Z",
+                  "user_id": 1,
+                  "gps_coordinate": {
+                    "id": 21,
+                    "accuracy": null,
+                    "altitude": null,
+                    "altitude_accuracy": null,
+                    "heading": null,
+                    "speed": null,
+                    "latitude": 50.2365548,
+                    "longitude": 4.25636,
+                    "created_at": "2017-03-16T11:12:41.119Z",
+                    "updated_at": "2017-03-16T11:12:41.119Z"
                   }
-                ]
-            result = room.robot.simulate_occurrences(symptom_id, headers, nb_of_occurrences, gps_position, radius, channel_msg, start_date, end_date)
+                },
+                {
+                  'access-token': fake_token,
+                  'client': fake_client,
+                  'uid': fake_mail
+                }
+              ]
+          result = room.robot.simulate_occurrence(symptom_id, headers, gps_position, radius, channel_msg, start_date, end_date)
 
-          afterEach ->
-            generate_occurrence_stub.reset()
+        afterEach ->
+          generate_occurrence_stub.reset()
 
-          it 'makes a call to generate_occurrence with the symptom_id, gps_position, radius, start_date and end_date', ->
-            expect(generate_occurrence_stub).to.have.been.calledWithExactly(symptom_id, gps_position, radius, start_date, end_date)
+        it 'makes a call to generate_occurrence with the symptom_id, gps_position and radius', ->
+          expect(generate_occurrence_stub).to.have.been.calledWithExactly(symptom_id, gps_position, radius, start_date, end_date)
 
-          it 'makes 2 call to POST occurrences', ->
-            query.done()
+        it 'makes 1 call to POST occurrences', ->
+          query.done()
 
-          it 'posts 2 messages to the channel with the detail of the created occurrence', (done) ->
-            setTimeout () ->
-              expect(channel_msg_stub).to.have.been.calledWithMatch(/Occurrence created.*/)
-              expect(channel_msg_stub).to.have.been.calledTwice
-              done()
-            , 100 # wait for the message to be posted
-
-        context 'when gps_position and radius are given', ->
-          gps_position = {latitude: "50.2365548", longitude: "4.25636"}
-          radius = 0
-          fake_occurrence = {occurrence: {symptom_id: symptom_id, date: new Date, gps_coordinate:  {latitude: "50.2365548", longitude: "4.25636"}}}
-
-          beforeEach ->
-            generate_occurrence_stub = sinon.stub(room.robot, 'generate_occurrence')
-            generate_occurrence_stub.returns(fake_occurrence)
-            query = nock(simulation_url)
-              .matchHeader('uid', fake_mail)
-              .matchHeader('access-token', fake_token)
-              .matchHeader('client', fake_client)
-              .post(occurrences_path)
-              .times(nb_of_occurrences)
-              .reply (uri, requestBody) ->
-                return [
-                  201,
-                  {
-                    "id": 39,
-                    "symptom_id": 200,
-                    "date": "2017-02-13T20:31:05.863Z",
-                    "gps_coordinate_id": 21,
-                    "created_at": "2017-03-16T11:12:41.123Z",
-                    "updated_at": "2017-03-16T11:12:41.123Z",
-                    "user_id": 1,
-                    "gps_coordinate": {
-                      "id": 21,
-                      "accuracy": null,
-                      "altitude": null,
-                      "altitude_accuracy": null,
-                      "heading": null,
-                      "speed": null,
-                      "latitude": 50.2365548,
-                      "longitude": 4.25636,
-                      "created_at": "2017-03-16T11:12:41.119Z",
-                      "updated_at": "2017-03-16T11:12:41.119Z"
-                    }
-                  },
-                  {
-                    'access-token': fake_token,
-                    'client': fake_client,
-                    'uid': fake_mail
-                  }
-                ]
-            result = room.robot.simulate_occurrences(symptom_id, headers, nb_of_occurrences, gps_position, radius, channel_msg, start_date, end_date)
-
-          afterEach ->
-            generate_occurrence_stub.reset()
-
-          it 'makes a call to generate_occurrence with the symptom_id, gps_position and radius', ->
-            expect(generate_occurrence_stub).to.have.been.calledWithExactly(symptom_id, gps_position, radius, start_date, end_date)
-
-          it 'makes 2 call to POST occurrences', ->
-            query.done()
-
-          it 'posts 2 messages to the channel with the detail of the created occurrence', (done) ->
-            setTimeout () ->
-              expect(channel_msg_stub).to.have.been.calledWithMatch(/Occurrence created.*/)
-              expect(channel_msg_stub).to.have.been.calledTwice
-              done()
-            , 100
+        it 'posts 1 messages to the channel with the detail of the created occurrence', (done) ->
+          setTimeout () ->
+            expect(channel_msg_stub).to.have.been.calledWithMatch(/Occurrence created.*/)
+            expect(channel_msg_stub).to.have.been.calledOnce
+            done()
+          , 100
 
     context 'when headers are not valid', ->
       headers = {'access-token': 'foo', 'client': 'bar', 'uid': 'wrong'}
 
-      context 'when nb_of_occurrences equals 2', ->
-        nb_of_occurrences = 2
+      context 'when gps_position and radius are null', ->
+        fake_occurrence = {occurrence: {symptom_id: symptom_id, date: new Date}}
 
-        context 'when gps_position and radius are null', ->
-          fake_occurrence = {occurrence: {symptom_id: symptom_id, date: new Date}}
+        beforeEach ->
+          generate_occurrence_stub = sinon.stub(room.robot, 'generate_occurrence')
+          generate_occurrence_stub.returns(fake_occurrence)
+          query = nock(simulation_url)
+            .matchHeader('uid', fake_mail)
+            .matchHeader('access-token', fake_token)
+            .matchHeader('client', fake_client)
+            .post(occurrences_path)
+            .replyWithError('an error')
+          result = room.robot.simulate_occurrence(symptom_id, headers, gps_position, radius, channel_msg, start_date, end_date)
 
-          beforeEach ->
-            generate_occurrence_stub = sinon.stub(room.robot, 'generate_occurrence')
-            generate_occurrence_stub.returns(fake_occurrence)
-            query = nock(simulation_url)
-              .matchHeader('uid', fake_mail)
-              .matchHeader('access-token', fake_token)
-              .matchHeader('client', fake_client)
-              .post(occurrences_path)
-              .times(nb_of_occurrences)
-              .replyWithError('an error')
-            result = room.robot.simulate_occurrences(symptom_id, headers, nb_of_occurrences, gps_position, radius, channel_msg, start_date, end_date)
+        afterEach ->
+          generate_occurrence_stub.reset()
 
-          afterEach ->
-            generate_occurrence_stub.reset()
+        it 'makes a call to generate_occurrence with the symptom_id, gps_position and radius', ->
+          expect(generate_occurrence_stub).to.have.been.calledWithExactly(symptom_id, gps_position, radius, start_date, end_date)
 
-          it 'makes a call to generate_occurrence with the symptom_id, gps_position and radius', ->
-            expect(generate_occurrence_stub).to.have.been.calledWithExactly(symptom_id, gps_position, radius, start_date, end_date)
+        it 'posts 1 messages to the channel with the detail of the error', (done) ->
+          setTimeout () ->
+            expect(channel_msg_stub).to.have.been.calledWithMatch(/Error while doing a POST on.*/)
+            expect(channel_msg_stub).to.have.been.calledOnce
+            done()
+          , 100 # wait for the message to be posted
 
-          it 'posts 2 messages to the channel with the detail of the error', (done) ->
-            setTimeout () ->
-              expect(channel_msg_stub).to.have.been.calledWithMatch(/Error while doing a POST on.*/)
-              expect(channel_msg_stub).to.have.been.calledTwice
-              done()
-            , 100 # wait for the message to be posted
+describe 'simulate_occurrence_with_delay', ->
+  room = null
+  simulate_occurrence_stub = null
+  delay = 20
+
+  beforeEach ->
+    room = helper.createRoom()
+    simulate_occurrence_stub = sinon.stub(room.robot, 'simulate_occurrence')
+    room.robot.simulate_occurrence_with_delay(0, 0, 0, 0, 0, 0, 0, delay)
+
+  afterEach ->
+    room.destroy()
+
+  it 'makes 1 calls to simulate_occurrence_with_delay', (done) ->
+    setTimeout () ->
+      expect(simulate_occurrence_stub).to.have.been.calledOnce
+      done()
+    , delay * 2 # wait for async call to be made
+
+describe 'simulate_occurrences', ->
+  room = null
+  simulate_occurrence_with_delay_stub = null
+  nb_of_occurrences = 10
+
+  beforeEach ->
+    room = helper.createRoom()
+    simulate_occurrence_with_delay_stub = sinon.stub(room.robot, 'simulate_occurrence_with_delay')
+    room.robot.simulate_occurrences(0, 0, nb_of_occurrences, 0, 0, 0, 0, 0)
+
+  afterEach ->
+    room.destroy()
+
+  it 'makes 10 calls to simulate_occurrence_with_delay', ->
+    expect(simulate_occurrence_with_delay_stub).to.have.been.callCount(nb_of_occurrences)
 
 describe 'start_simulation', ->
   room = null

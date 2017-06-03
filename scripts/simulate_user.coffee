@@ -106,22 +106,31 @@ module.exports = (robot) ->
     else
       return {occurrence: {symptom_id: symptom_id, date: date}}
 
-  robot.simulate_occurrences = (symptom_id, headers, nb_of_occurrences, gps_position, radius, channel_res, start_date, end_date) ->
+  robot.simulate_occurrence = (symptom_id, headers, gps_position, radius, channel_res, start_date, end_date) ->
+    new_occurrence = robot.generate_occurrence(symptom_id, gps_position, radius, start_date, end_date)
+    data = JSON.stringify(new_occurrence)
+    robot.http(api_path + '/' + post_occurrence_path, https_options)
+      .header('Content-Type', 'application/json')
+      .header('access-token', headers['access-token'])
+      .header('client', headers['client'])
+      .header('uid', headers['uid'])
+      .post(data) (err, res, body) ->
+        if err
+          channel_res.send "Error while doing a POST on #{post_occurrence_path} for occurrence #{new_occurrence}"
+        else
+          channel_res.send "Occurrence created for user #{headers['uid']} with body #{body}"
+
+  robot.simulate_occurrence_with_delay = (symptom_id, headers, gps_position, radius, channel_res, start_date, end_date, delay) ->
+    setTimeout(() ->
+      robot.simulate_occurrence(symptom_id, headers, gps_position, radius, channel_res, start_date, end_date)
+    , delay)
+
+  robot.simulate_occurrences = (symptom_id, headers, nb_of_occurrences, gps_position, radius, channel_res, start_date, end_date, delay) ->
     for i in [1..nb_of_occurrences]
-      new_occurrence = robot.generate_occurrence(symptom_id, gps_position, radius, start_date, end_date)
-      data = JSON.stringify(new_occurrence)
-      robot.http(api_path + '/' + post_occurrence_path, https_options)
-        .header('Content-Type', 'application/json')
-        .header('access-token', headers['access-token'])
-        .header('client', headers['client'])
-        .header('uid', headers['uid'])
-        .post(data) (err, res, body) ->
-          if err
-            channel_res.send "Error while doing a POST on #{post_occurrence_path} for occurrence #{new_occurrence}"
-          else
-            channel_res.send "Occurrence created #{body}"
+      robot.simulate_occurrence_with_delay(symptom_id, headers, gps_position, radius, channel_res, start_date, end_date, delay + i)
 
   robot.start_simulation = (nb_of_users, symptoms_names, nb_of_occurrences, gps_position, radius, msg, start_date, end_date) ->
+    delay = 0
     for i in [1..nb_of_users]
       do (user_no = i) ->
         robot.create_user(randomEmail()).then (res) ->
@@ -129,7 +138,8 @@ module.exports = (robot) ->
           for j in [0..symptoms_names.length-1]
             do (index = j) ->
               robot.get_symptom_by_name(symptoms_names[index], headers).then (symptom) ->
-                robot.simulate_occurrences(symptom.id, headers, nb_of_occurrences[index], gps_position, radius, msg, start_date, end_date)
+                robot.simulate_occurrences(symptom.id, headers, nb_of_occurrences[index], gps_position, radius, msg, start_date, end_date, delay)
+                delay += nb_of_occurrences[index]
               .catch (err) ->
                 msg.send "Error while searching for the ID of the symptom #{symptoms_names[j]}. No occurrence will be created for this symptom :-1:. Error: #{err}"
         .catch (err) ->
